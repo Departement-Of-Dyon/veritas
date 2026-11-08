@@ -1,0 +1,140 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Detector — Operation Veritas</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b0e14;--panel:#12161f;--line:#232a38;--fg:#dfe6f0;--dim:#8b96a8;
+--acc:#e8b93e;--ok:#4ade80;--bad:#f87171;--mid:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:15px/1.6 'Segoe UI',system-ui,sans-serif}
+nav{display:flex;gap:1.4rem;align-items:center;padding:.9rem 1.6rem;
+border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0}
+nav b{color:var(--acc);letter-spacing:.12em;font-size:.85rem}
+nav a{color:var(--dim);text-decoration:none}nav a:hover{color:var(--fg)}
+.wrap{max-width:960px;margin:0 auto;padding:2rem 1.4rem}
+h1{font-size:2rem;letter-spacing:.04em}h2{color:var(--acc);font-size:1.1rem;
+letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+padding:1.2rem 1.4rem;margin:1rem 0}
+.muted{color:var(--dim)}code,pre{background:#0d1119;border:1px solid var(--line);
+border-radius:6px;padding:.1rem .4rem;font-family:Consolas,monospace;font-size:.9em}
+button{background:var(--acc);color:#111;border:0;border-radius:8px;
+padding:.6rem 1.3rem;font-weight:600;cursor:pointer}
+button:disabled{opacity:.5;cursor:wait}
+textarea{width:100%;background:#0d1119;color:var(--fg);
+border:1px solid var(--line);border-radius:8px;padding:.7rem;font:inherit}
+.v-ok{color:var(--ok)}.v-mid{color:var(--mid)}.v-bad{color:var(--bad)}
+.badge{display:inline-block;padding:.15rem .6rem;border-radius:99px;
+border:1px solid var(--line);font-size:.8rem;color:var(--dim)}
+.sample{border-left:3px solid var(--line);padding:.5rem .9rem;margin:.5rem 0;
+background:#0d1119;border-radius:0 8px 8px 0;white-space:pre-wrap}
+.flag{color:var(--mid)}
+</style></head><body>
+<nav><b>OPERATION VERITAS</b>
+<a href="/veritas/">Home</a><a href="/veritas/research/">Research</a>
+<a href="/veritas/detector/">Detector</a>
+<span class="badge" id="status">checking…</span></nav>
+<div class="wrap">
+<h1>Detector</h1>
+<p class="muted">Runs entirely in your browser against a <b>local</b> Ollama
+instance (<code>qwen2.5:1.5b</code>). Nothing is sent anywhere.</p>
+<div class="card">
+<textarea id="q" rows="3" placeholder="e.g. Is drinking eight glasses of water a day scientifically proven to be necessary?"></textarea>
+<p><button id="go">Run check</button> <span class="muted" id="t"></span></p>
+</div>
+<div id="out"></div>
+</div>
+<script>
+const OLLAMA='http://localhost:11434';
+const MODEL='qwen2.5:1.5b';
+const esc=s=>{const d=document.createElement('div');d.textContent=s;return d.innerHTML};
+
+async function gen(prompt,temp,np=220){
+ const r=await fetch(OLLAMA+'/api/generate',{method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({model:MODEL,prompt,stream:false,
+   options:{temperature:temp,num_predict:np}})});
+ if(!r.ok)throw new Error('ollama '+r.status);
+ return (await r.json()).response.trim();
+}
+function norm(t){return t.toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+/* word-overlap similarity (approximation of difflib ratio) */
+function sim(a,b){
+ const A=new Set(norm(a).split(' ').filter(Boolean));
+ const B=new Set(norm(b).split(' ').filter(Boolean));
+ if(!A.size||!B.size)return 0;
+ let inter=0;A.forEach(w=>{if(B.has(w))inter++});
+ return 2*inter/(A.size+B.size);
+}
+const RISKY=/\b\d+([.,]\d+)?\s?(%|percent|billion|million|trillion|kg|km|mph|years?|studies|researchers|scientists|according to|reportedly|always|never|every|all|none|guaranteed|proven|fact)\b/i;
+function audit(text){
+ return text.split(/(?<=[.!?])\s+/).filter(s=>RISKY.test(s))
+  .map(s=>({sentence:s.trim().slice(0,300),
+   flags:[...new Set((s.match(RISKY)||[]).map(x=>x.toLowerCase()))].slice(0,6)}));
+}
+(async()=>{ // status
+ try{const r=await fetch(OLLAMA+'/api/tags',{signal:AbortSignal.timeout(3000)});
+  const d=await r.json();
+  const ok=d.models?.some(m=>m.name.startsWith('qwen2.5'));
+  const el=document.getElementById('status');
+  el.textContent=ok?'ollama: '+MODEL:'ollama up, model missing';
+  el.className='badge '+(ok?'v-ok':'v-mid');
+ }catch(e){const el=document.getElementById('status');
+  el.textContent='ollama offline';el.className='badge v-mid';}
+})();
+document.getElementById('go').onclick=async()=>{
+ const q=document.getElementById('q').value.trim(); if(!q)return;
+ const b=document.getElementById('go'); b.disabled=true; b.textContent='Running…';
+ const out=document.getElementById('out'); out.innerHTML='';
+ const t0=Date.now();
+ try{
+  const answers=[];
+  for(let i=0;i<5;i++){
+   out.innerHTML+=`<div class="card muted">sampling ${i+1}/5…</div>`;
+   answers.push(await gen(q,i?0.9:0.2));
+  }
+  let tot=0,n=0;
+  for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){tot+=sim(answers[i],answers[j]);n++}
+  const score=+(tot/n).toFixed(3);
+  const chal=await gen(
+   "A skeptical fact-checker doubts this claim:\n\n"+
+   `CLAIM/QUESTION: ${q}\nYOUR ANSWER WAS: ${answers[0]}\n\n`+
+   "Argue the strongest case FOR your answer being true, then honestly " +
+   "state your confidence (0-100%) and name anything you are NOT sure " +
+   "about. Be brutally honest — admitting uncertainty is correct behavior.",0.4,350);
+  const flags=audit(answers[0]);
+  const verdict=score>=0.75&&!flags.length?'LIKELY CONSISTENT':
+   score>=0.5?'MIXED':'INCONSISTENT';
+  const note=score>=0.75?'High agreement, no risky claims.':
+   score>=0.5?'Moderate agreement — model hedges or varies.':
+   'Low agreement — treat with suspicion.';
+  const vc=verdict.includes('CONSISTENT')?'v-ok':verdict.includes('MIXED')?'v-mid':'v-bad';
+  let h=`<div class="card"><h2>Verdict: <span class="${vc}">${verdict}</span></h2>
+   <p class="muted">${note} · consistency ${score} · ${((Date.now()-t0)/1000).toFixed(1)}s · browser→localhost:${MODEL}</p></div>`;
+  h+='<div class="card"><h2>Samples (5)</h2>';
+  answers.forEach((s,i)=>{h+=`<div class="sample"><b>#${i+1}</b> ${esc(s)}</div>`});
+  h+=`</div><div class="card"><h2>Skeptic Challenge</h2><div class="sample">${esc(chal)}</div></div>`;
+  if(flags.length){h+='<div class="card"><h2>Flagged Claims</h2>';
+   flags.forEach(f=>{h+=`<div class="sample flag">&#9888; ${esc(f.sentence)}<br><span class="muted">flags: ${f.flags.join(', ')}</span></div>`});
+   h+='</div>';}
+  out.innerHTML=h;
+ }catch(e){
+  out.innerHTML=`<div class="card"><h2>Ollama not reachable</h2>
+   <p>This page calls <code>localhost:11434</code> directly from your
+   browser. To enable it:</p>
+   <pre>1. Install Ollama + pull the model:
+   ollama pull qwen2.5:1.5b
+
+2. Allow this site's origin:
+   set OLLAMA_ORIGINS=https://departement-of-dyon.github.io
+   (then restart Ollama)
+
+   — or — run the full Flask version locally:
+   git clone https://github.com/Departement-Of-Dyon/veritas
+   py veritas.py   →  http://localhost:5510</pre>
+   <p class="muted">Error: ${esc(e.message)}</p></div>`;
+ }
+ document.getElementById('t').textContent=`done in ${((Date.now()-t0)/1000).toFixed(1)}s`;
+ b.disabled=false; b.textContent='Run check';
+};
+</script>
+</body></html>

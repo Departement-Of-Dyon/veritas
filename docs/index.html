@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Operation Veritas — Departement-Of-Dyon</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b0e14;--panel:#12161f;--line:#232a38;--fg:#dfe6f0;--dim:#8b96a8;
+--acc:#e8b93e;--ok:#4ade80;--bad:#f87171;--mid:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:15px/1.6 'Segoe UI',system-ui,sans-serif}
+nav{display:flex;gap:1.4rem;align-items:center;padding:.9rem 1.6rem;
+border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0}
+nav b{color:var(--acc);letter-spacing:.12em;font-size:.85rem}
+nav a{color:var(--dim);text-decoration:none}nav a:hover{color:var(--fg)}
+.wrap{max-width:960px;margin:0 auto;padding:2rem 1.4rem}
+h1{font-size:2rem;letter-spacing:.04em}h2{color:var(--acc);font-size:1.1rem;
+letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+padding:1.2rem 1.4rem;margin:1rem 0}
+.muted{color:var(--dim)}code,pre{background:#0d1119;border:1px solid var(--line);
+border-radius:6px;padding:.1rem .4rem;font-family:Consolas,monospace;font-size:.9em}
+pre{padding:.9rem;overflow:auto}
+.btn{background:var(--acc);color:#111;border:0;border-radius:8px;
+padding:.6rem 1.3rem;font-weight:600;cursor:pointer;text-decoration:none;
+display:inline-block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+</style></head><body>
+<nav><b>OPERATION VERITAS</b>
+<a href="/veritas/">Home</a><a href="/veritas/research/">Research</a>
+<a href="/veritas/detector/">Detector</a></nav>
+<div class="wrap">
+<h1>Can we catch an AI lying?</h1>
+<p class="muted">A Departement-Of-Dyon research operation. We don't ask
+whether an AI <i>can</i> lie — we measure it. Three instruments:</p>
+<div class="grid">
+<div class="card"><h2>Consistency Sampler</h2>
+<p>Ask the same question 5 times at high temperature. A truthful,
+knowledgeable model converges; a hallucinating one scatters.</p></div>
+<div class="card"><h2>Skeptic Challenge</h2>
+<p>The model must defend its own answer against a hostile fact-checker
+and state a confidence score — honesty under pressure.</p></div>
+<div class="card"><h2>Claim Auditor</h2>
+<p>Sentences containing numbers, studies, dates, or absolute claims
+("always", "proven", "guaranteed") get flagged for verification.</p></div>
+<div class="card"><h2>Local &amp; Private</h2>
+<p>Runs against your own local Ollama model — nothing leaves your
+machine. Fully open source.</p></div>
+</div>
+<p><a class="btn" href="/veritas/detector/">Run a check →</a></p>
+<p class="muted">Source: <a href="https://github.com/Departement-Of-Dyon/veritas" style="color:var(--acc)">github.com/Departement-Of-Dyon/veritas</a></p>
+</div></body></html>

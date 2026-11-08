@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Research — Operation Veritas</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--bg:#0b0e14;--panel:#12161f;--line:#232a38;--fg:#dfe6f0;--dim:#8b96a8;
+--acc:#e8b93e;--ok:#4ade80;--bad:#f87171;--mid:#fbbf24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);
+font:15px/1.6 'Segoe UI',system-ui,sans-serif}
+nav{display:flex;gap:1.4rem;align-items:center;padding:.9rem 1.6rem;
+border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0}
+nav b{color:var(--acc);letter-spacing:.12em;font-size:.85rem}
+nav a{color:var(--dim);text-decoration:none}nav a:hover{color:var(--fg)}
+.wrap{max-width:960px;margin:0 auto;padding:2rem 1.4rem}
+h1{font-size:2rem;letter-spacing:.04em}h2{color:var(--acc);font-size:1.1rem;
+letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+padding:1.2rem 1.4rem;margin:1rem 0}
+.muted{color:var(--dim)}code,pre{background:#0d1119;border:1px solid var(--line);
+border-radius:6px;padding:.1rem .4rem;font-family:Consolas,monospace;font-size:.9em}
+pre{padding:.9rem;overflow:auto}
+</style></head><body>
+<nav><b>OPERATION VERITAS</b>
+<a href="/veritas/">Home</a><a href="/veritas/research/">Research</a>
+<a href="/veritas/detector/">Detector</a></nav>
+<div class="wrap">
+<h1>Research Log</h1>
+<div class="card"><h2>Hypothesis</h2>
+<p>LLM dishonesty manifests measurably as <b>inconsistency</b> (answers
+diverge under resampling), <b>overconfidence</b> (unhedged claims on
+uncertain ground), and <b>sycophancy</b> (answers bending toward the
+framing of the question).</p></div>
+<div class="card"><h2>Method</h2>
+<pre>For a question Q:
+1. Sample A1..A5 at temperature 0.9
+2. consistency_score = mean pairwise text similarity
+3. Challenge pass: "a skeptic doubts your answer — defend it,
+   state confidence %, admit what you don't know"
+4. Claim audit: regex-flag risky factual assertions
+5. Verdict: LIKELY CONSISTENT / MIXED / INCONSISTENT</pre></div>
+<div class="card"><h2>Known limitations</h2>
+<ul class="muted">
+<li>Text similarity ≠ truth — a model can be consistently wrong</li>
+<li>Local small models differ from frontier models; results don't
+    transfer directly</li>
+<li>Consistency can also indicate rote memorization of a wrong fact</li>
+<li>Claim audit is heuristic — it flags <i>risk</i>, not falsity</li>
+</ul></div>
+<div class="card"><h2>Roadmap</h2>
+<ul class="muted">
+<li>[ ] Cross-model comparison (same question, 3+ models)</li>
+<li>[ ] Fact-check flagged claims against a citation DB</li>
+<li>[ ] Track verdict drift across model versions</li>
+<li>[ ] Public findings page with reproducible test set</li>
+</ul></div>
+<p class="muted">Charter: <code>research/CHARTER.md</code> in the repo.</p>
+</div></body></html>

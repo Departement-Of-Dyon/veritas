@@ -38,3 +38,20 @@ POST /api/check {question} -> verdict report
 See `research/CHARTER.md` for the research program.
 
 MIT licensed.
+
+## GitHub Pages
+
+A static version of the site is published from `docs/` at
+https://departement-of-dyon.github.io/veritas/
+
+The static Detector runs client-side against a **local** Ollama —
+for remote visitors it shows setup instructions. To let the Pages site
+call Ollama directly, start it with:
+
+```bash
+set OLLAMA_ORIGINS=https://departement-of-dyon.github.io
+ollama serve
+```
+
+(That exposes your local Ollama to that origin only — or use `*` to
+allow any site, which is less safe.)
