@@ -19,7 +19,7 @@ import os, re, json, time, random, difflib, urllib.request, urllib.error
 from flask import Flask, request, jsonify, render_template_string
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-MODEL = os.environ.get("OLLAMA_MODEL", "llama3.1:8b")
+MODEL = os.environ.get("OLLAMA_MODEL", "qwen2.5:1.5b")
 OLLAMA = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 PORT = int(os.environ.get("PORT", "5510"))
 

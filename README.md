@@ -10,7 +10,7 @@ pip install flask
 py veritas.py          # -> http://localhost:5510
 ```
 
-Set `OLLAMA_MODEL` to pick a model (default `llama3.1:8b`). With Ollama
+Set `OLLAMA_MODEL` to override the model (default `qwen2.5:1.5b`). With Ollama
 offline the site still runs in **demo mode** (simulated reports).
 
 ## Pages
